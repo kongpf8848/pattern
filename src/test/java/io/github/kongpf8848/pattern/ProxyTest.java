@@ -2,7 +2,10 @@ package io.github.kongpf8848.pattern;
 
 import io.github.kongpf8848.pattern.proxy.*;
 import org.junit.Test;
+import sun.misc.ProxyGenerator;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
@@ -21,9 +24,19 @@ public class ProxyTest {
     public void testDynamicProxy(){
         //动态代理模式
         System.out.println("动态代理模式+++++++++++++++++++++++++++++++++++");
-        Subject realSubject = new RealSubject();
+        System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles","true");
+        byte[]bytes=ProxyGenerator.generateProxyClass("Proxy0",new Class[]{Subject.class});
+        try {
+            FileOutputStream fos=new FileOutputStream("Proxy0.class");
+            fos.write(bytes);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        RealSubject realSubject = new RealSubject();
         InvocationHandler handler = new DynamicProxy(realSubject);
-        Subject subject = (Subject) Proxy.newProxyInstance(realSubject.getClass().getClassLoader(),new Class<?>[] { Subject.class }, handler);
+        Subject subject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(),new Class<?>[] { Subject.class }, handler);
         subject.hello("jack");
 
     }
