@@ -8,17 +8,16 @@ import java.lang.reflect.Method;
  */
 public class DynamicProxy implements InvocationHandler {
 
-    private Object subject;
+    private Object object;
 
     public DynamicProxy(Object subject)
     {
-        this.subject = subject;
+        this.object = subject;
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-
-        method.invoke(subject,args);
-        return null;
+        Object result=method.invoke(object,args);
+        return result;
     }
 }
