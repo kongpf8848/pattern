@@ -1,9 +1,6 @@
 package io.github.kongpf8848.pattern;
 
 import com.squareup.javapoet.*;
-import io.github.kongpf8848.pattern.proxy.DynamicProxy;
-import io.github.kongpf8848.pattern.proxy.RealSubject;
-import io.github.kongpf8848.pattern.proxy.Subject;
 
 import javax.lang.model.element.Modifier;
 import java.io.File;
@@ -14,23 +11,34 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class MyProxy {
+public class MyProxy implements java.io.Serializable{
 
-    public static void newProxyInstance(Class clazz, InvocationHandler h) {
+    private static final Class<?>[] constructorParams = { InvocationHandler.class };
+
+    protected InvocationHandler h;
+
+    private MyProxy() {
+    }
+
+    protected MyProxy(InvocationHandler h) {
+        Objects.requireNonNull(h);
+        this.h = h;
+    }
+
+    public static Object newProxyInstance(Class clazz, InvocationHandler h) {
         try {
             TypeSpec.Builder typeSpecBuilder = TypeSpec.classBuilder("TimeProxy")
                     .addSuperinterface(clazz)
+                    .superclass(MyProxy.class)
                     .addModifiers(Modifier.PUBLIC);
-
-            FieldSpec fieldSpec = FieldSpec.builder(InvocationHandler.class, "h", Modifier.PRIVATE).build();
-            typeSpecBuilder.addField(fieldSpec);
 
             //添加构造函数
             MethodSpec constructMethodSpec = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(InvocationHandler.class, "h")
-                    .addStatement("this.h=h")
+                    .addStatement("super(h)")
                     .build();
 
             typeSpecBuilder.addMethod(constructMethodSpec);
@@ -87,7 +95,7 @@ public class MyProxy {
 
 
                 methodBuilder.addCode("try {\n")
-                        .addStatement("\tthis.h.invoke(this,$L, new Object[]{$L})",fieldName,Utils.join(",", parameterNameList))
+                        .addStatement("\tsuper.h.invoke(this,$L, new Object[]{$L})",fieldName,Utils.join(",", parameterNameList))
                         .addCode("} catch(Throwable e) {\n")
                         .addCode("\te.printStackTrace();\n")
                         .addCode("}\n")
@@ -102,45 +110,40 @@ public class MyProxy {
                     .add("}\n");
             typeSpecBuilder.addStaticBlock(staticCodeBuilder.build());
 
+            String sourceDir = "/Users/kongpf/Desktop/";
+            String packageName="io.github.kongpf8848.pattern.proxy";
             //生成.java文件
-            JavaFile javaFile = JavaFile.builder("io.github.kongpf8848.pattern.proxy", typeSpecBuilder.build()).build();
-            javaFile.writeTo(new File("/Users/kongpf/Desktop/"));
+            JavaFile javaFile = JavaFile.builder(packageName, typeSpecBuilder.build()).build();
+            javaFile.writeTo(new File(sourceDir));
+
+            //编译
+            JavaCompiler.compile(new File(sourceDir+packageName.replace(".","/")+"/TimeProxy.java"));
+
+            //加载class
+            try {
+                URL[] urls = new URL[]{new File(sourceDir).toURL()};
+                URLClassLoader classLoader = new URLClassLoader(urls);
+                Class c = classLoader.loadClass("io.github.kongpf8848.pattern.proxy.TimeProxy");
+                final Constructor constructor = c.getConstructor(constructorParams);
+                return constructor.newInstance(new Object[]{h});
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
 
-    }
-
-    public static void createProxyClassFile() {
-        String sourcePath = "/Users/kongpf/Desktop/";
-        try {
-            JavaCompiler.compile(new File(sourcePath + "io/github/kongpf8848/pattern/proxy/TimeProxy.java"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void loadClass() {
-        String sourcePath = "/Users/kongpf/Desktop";
-        try {
-            URL[] urls = new URL[]{new File(sourcePath).toURL()};
-            URLClassLoader classLoader = new URLClassLoader(urls);
-            Class clazz = classLoader.loadClass("io.github.kongpf8848.pattern.proxy.TimeProxy");
-            Constructor constructor = clazz.getDeclaredConstructor(InvocationHandler.class);
-            Subject s = (Subject) constructor.newInstance(new DynamicProxy(new RealSubject()));
-            s.hello("abc");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
     }
 }

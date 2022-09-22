@@ -43,9 +43,8 @@ public class ProxyTest {
          RealSubject realSubject = new RealSubject();
          InvocationHandler handler = new DynamicProxy(realSubject);
 
-        Subject subject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(),new Class<?>[] { Subject.class }, handler);
-         MyProxy.newProxyInstance(Subject.class,handler);
-         MyProxy.createProxyClassFile();
-         MyProxy.loadClass();
+        //Subject subject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(),new Class<?>[] { Subject.class }, handler);
+        Subject subject=(Subject) MyProxy.newProxyInstance(Subject.class,handler);
+        subject.hello("jack");
     }
 }
