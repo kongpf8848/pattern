@@ -4,6 +4,8 @@ import io.github.kongpf8848.pattern.observer.ConcreteObserver;
 import io.github.kongpf8848.pattern.observer.ConcreteSubject;
 import org.junit.Test;
 
+import java.util.Vector;
+
 public class ObserverTest {
     @Test
     public void testObserver() {
