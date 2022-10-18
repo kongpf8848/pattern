@@ -1,8 +1,12 @@
-package io.github.kongpf8848.pattern.builder;
+package io.github.kongpf8848.pattern;
 
-public class Test {
+import io.github.kongpf8848.pattern.builder.Student;
+import org.junit.Test;
 
-    public static void main(String[]args){
+public class BuilderTest {
+
+    @Test
+    public void test(){
         //Builder模式
         System.out.println("Builder模式+++++++++++++++++++++++++++++++++++");
         Student s = new Student.Builder().id(10).name("jack").sex("男").address("上海").build();

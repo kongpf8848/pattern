@@ -5,22 +5,18 @@ package io.github.kongpf8848.pattern.builder;
  */
 public class Student {
 
-    private int id;
-    private String name;
-    private String sex;
-    private String address;
+    private final int id;
+    private final String name;
+    private final String sex;
+    private final String address;
 
-    private Student()
-    {
+    private Student(int id, String name, String sex, String address) {
+        this.id = id;
+        this.name = name;
+        this.sex = sex;
+        this.address = address;
+    }
 
-    }
-    private Student(Student s)
-    {
-        this.id=s.id;
-        this.name=s.name;
-        this.sex=s.sex;
-        this.address=s.address;
-    }
     public int getId() {
         return id;
     }
@@ -40,39 +36,37 @@ public class Student {
     }
 
 
+    public static class Builder {
+        private int id;
+        private String name;
+        private String sex;
+        private String address;
 
-    public static class Builder
-    {
-        private Student target;
-        public Builder()
-        {
-            target=new Student();
+        public Builder() {
         }
 
-        public Builder id(int id)
-        {
-            target.id=id;
-            return this;
-        }
-        public Builder name(String name)
-        {
-            target.name=name;
-            return this;
-        }
-        public Builder sex(String sex)
-        {
-            target.sex=sex;
-            return this;
-        }
-        public Builder address(String address)
-        {
-            target.address=address;
+        public Builder id(int id) {
+            this.id = id;
             return this;
         }
 
-        public Student build()
-        {
-            return new Student(target);
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder sex(String sex) {
+            this.sex = sex;
+            return this;
+        }
+
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+
+        public Student build() {
+            return new Student(this.id, this.name,this.sex,this.address);
 
         }
 
