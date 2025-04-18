@@ -4,6 +4,7 @@ import io.github.kongpf8848.pattern.proxy.*;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public class ProxyTest {
@@ -40,11 +41,16 @@ public class ProxyTest {
 
     @Test
     public void testMyProxy(){
-         RealSubject realSubject = new RealSubject();
-         InvocationHandler handler = new DynamicProxy(realSubject);
+//         RealSubject realSubject = new RealSubject();
+//         InvocationHandler handler = new DynamicProxy(realSubject);
 
-        //Subject subject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(),new Class<?>[] { Subject.class }, handler);
-        Subject subject=(Subject) MyProxy.newProxyInstance(Subject.class,handler);
+        Subject subject = (Subject)Proxy.newProxyInstance(Subject.class.getClassLoader(), new Class<?>[]{Subject.class}, new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return method.invoke(proxy,args);
+            }
+        });
+        //Subject subject=(Subject) MyProxy.newProxyInstance(Subject.class,handler);
         subject.hello("jack");
     }
 }
